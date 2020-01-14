@@ -1,0 +1,256 @@
+/*---------[IMPORTS]---------*/
+@import url(https://fonts.googleapis.com/css?family=Dosis:300|Lato:300,400,600,700|Roboto+Condensed:300,700|Open+Sans+Condensed:300,600|Open+Sans:400,300,600,700|Maven+Pro:400,700);
+/*------[FIN IMPORTS]--------*/
+
+
+/*------[CSS GENERAL]--------*/
+* {
+	 box-sizing: border-box;
+}
+ html, body {
+	 background-color: #202b33;
+	 color: #738491;
+	 font-family: "Open Sans";
+	 font-size: 16px;
+	 overflow: hidden;
+}
+ header {
+	 color: #d3d3d3;
+}
+/*------[FIN CSS GENERAL]--------*/
+
+
+
+
+/*------[CSS SIDEBAR]--------*/
+ nav {
+	 position: absolute;
+	 top: 0;
+	 bottom: 0;
+	 right: 82%;
+	 left: 0;
+	 padding: 22px;
+	 border-right: 2px solid #161e23;
+}
+ nav > header {
+	 font-weight: 700;
+	 font-size: 1.2rem;
+	 text-transform: uppercase;
+}
+ nav section {
+	 font-weight: 600;
+}
+ nav section header {
+	 padding-top: 30px;
+}
+ nav section ul {
+	 list-style: none;
+	 padding: 0px;
+}
+ nav section ul li {
+	 position: relative;
+	 padding: 10px 0px;
+	 cursor: pointer;
+}
+ nav section ul li.active {
+	 color: #2278ae;
+	 cursor: pointer;
+}
+ nav section ul li:after {
+	 content: attr(data-value);
+	 position: absolute;
+	 right: 0px;
+	 width: 19px;
+	 background-color: #738491;
+	 font-size: 0.9rem;
+	 color: #202b33;
+	 border-radius: 19px;
+	 text-align: center;
+	 cursor: pointer;
+}
+ nav section ul li.red:after {
+	 content: '';
+	 position: absolute;
+	 top: 14px;
+	 right: 0px;
+	 width: 10px;
+	 height: 10px;
+	 background-color: rgba(236, 72, 127, 1);
+	 border-radius: 10px;
+}
+ nav section ul li.yellow:after {
+	 content: '';
+	 position: absolute;
+	 top: 14px;
+	 right: 0px;
+	 width: 10px;
+	 height: 10px;
+	 background-color: rgba(234, 142, 57, 1);
+	 border-radius: 10px;
+}
+ nav section ul li.green:after {
+	 content: '';
+	 position: absolute;
+	 top: 14px;
+	 right: 0px;
+	 width: 10px;
+	 height: 10px;
+	 background-color: rgba(56, 175, 91, 1);
+	 border-radius: 10px;
+}
+ nav section ul li.new {
+	 font-size: 0.9rem;
+	 color: #545f68;
+}
+/*------[FIN CSS SIDEBAR]--------*/
+
+
+
+/*------[CSS PAGE ENTIERE]--------*/
+ article {
+	 position: absolute;
+	 top: 0;
+	 bottom: 0;
+	 right: 0;
+	 left: 18%;
+	 overflow: auto;
+	 border-left: 2px solid #2a3843;
+	 padding: 20px;
+}
+
+/*------[CSS BAR INFORMATIVE]--------*/
+ article > header {
+	 height: 60px;
+	 border-bottom: 1px solid #2a3843;
+}
+ article > header .title {
+	 float: left;
+	 font-size: 1.3rem;
+	 font-weight: 600;
+}
+ article > header #user {
+	 float: right;
+	 width: 48px;
+	 height: 48px;
+	 background-image: url(https://assets.weatherstack.com/images/wsymbols01_png_64/wsymbol_0001_sunny.png);
+	 border-radius: 48px;
+	 margin-left: 20px;
+}
+ article > header .interval {
+	 float: right;
+}
+ article > header .interval ul {
+	 padding: 0;
+	 list-style: none;
+}
+ article > header .interval ul li {
+	 float: right;
+	 text-transform: uppercase;
+	 font-size: 0.9rem;
+	 font-weight: 600;
+	 padding: 2px 10px;
+	 margin: 0px 10px;
+}
+ article > header .interval ul li.active {
+	 background-color: #d3d3d3;
+	 color: #202b33;
+	 border-radius: 10px;
+}
+/*------[FIN CSS BAR INFORMATIVE]--------*/
+
+/*------[CSS PAGE]--------*/
+ article section {
+	 margin-top: 20px;
+	 margin-bottom: 20px;
+}
+ article section > header {
+	 margin-bottom: 20px;
+	 font-size: 1.1rem;
+	 font-weight: 600;
+}
+ article section .chart {
+	 height: 200px;
+}
+ article section .inlineChart {
+	 float: left;
+	 width: 30%;
+	 margin-bottom: 50px;
+}
+ article section .inlineChart canvas {
+	 float: left;
+}
+ article section .inlineChart .info {
+	 float: left;
+	 padding-left: 20px;
+	 padding-top: 16px;
+}
+ article section .inlineChart .info .value {
+	 font-size: 2rem;
+	 color: #d3d3d3;
+}
+ article section table {
+	 width: 100%;
+}
+ article section table th, article section table td {
+	 padding: 15px 0px;
+	 border-bottom: 1px solid #2a3843;
+}
+ article section table thead th {
+	 text-align: left;
+	 font-size: 0.9rem;
+	 text-transform: uppercase;
+	 color: #d3d3d3;
+}
+ /*------[FIN CSS PAGE & PAGE ENTIERE]--------*/
+
+
+
+/*------[CSS SCROLLBAR]--------*/
+::-webkit-scrollbar {
+	width: 14px;
+  }
+  
+  /* Traqueur */
+  ::-webkit-scrollbar-track {
+	  background: transparent;
+  }
+   
+  /* Curseur */
+  ::-webkit-scrollbar-thumb {
+	  background: linear-gradient(-45deg, #545f68, #161e23);
+	  animation: gradientBG 15s ease infinite;
+	  width: 14px;
+	  height: 50%;
+	  max-height: 70%;
+	  border-radius: 35px;
+  }
+/*------[FIN CSS SCROLLBAR]--------*/
+
+
+
+
+
+/*------[CSS AFFICHAGE PAGES]--------*/
+  #pageMesures{
+	display: block;
+  }
+  #pageMesures-chart{
+	display: block;
+  }
+  #pageMap{
+	display: block;
+  }
+  #capteur{
+	display: block;
+  }
+  /*------[FIN CSS AFFICHAGE PAGES]--------*/
+
+
+/*--------[MANAGE DU RESPONSIVE]-----------*/
+#desktop {display: block;}
+#mobile {display: none;}
+
+@media screen and (max-width: 768px) {
+	#desktop {display: none;}
+	#mobile {display: block;}
+}

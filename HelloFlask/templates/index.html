@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+    <html lang="fr">
+        <head>
+            <meta charset="utf-8"/>
+            <meta http-equiv="X-UA-Compatible" content="ie=edge">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+
+            <link rel="shortcut icon" href="{{ url_for('static',filename='favicon.ico') }}" />
+            <link rel="icon" type="image/x-icon" href="{{ url_for('static',filename='favicon.ico') }}" />
+            <!--------------------------------------[Initialisation CSS]------------------------------------------------------------>
+            <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+            <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+            <link rel= "stylesheet" type= "text/css" href= "/static/css/map.css">
+            <link rel= "stylesheet" type= "text/css" href= "/static/css/main.css">
+            <!--------------------------------------[Initialisation JS]------------------------------------------------------------>
+            <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js"></script>
+            <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+            <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
+            <script src="{{ url_for('static',filename='dist/chart.js') }}"></script>
+            <script src='https://api.mapbox.com/mapbox-gl-js/v1.4.1/mapbox-gl.js'></script>
+            <link href='https://api.mapbox.com/mapbox-gl-js/v1.4.1/mapbox-gl.css' rel='stylesheet' />
+            <!---------------------------------------------------[SCRIPT JS]-------------------------------------------------------->
+            <script type="text/javascript" src="{{ url_for('static',filename='js/script.js') }}"></script>
+            <script type="text/javascript" src="{{ url_for('static',filename='js/dashboard.js') }}"></script>
+
+
+            <title>BigWeather - Tableau de Bord</title>
+            <!--------------------------------------------------[FIN DU HEAD]-------------------------------------------------------->
+        </head>
+
+        <body>
+
+        <!--CODE INDEX HTML DE LA VERSION BUREAU/DESKTOP-->
+        <div id="desktop">
+            <!--------------------------------------------------[SIDEBAR]-------------------------------------------------------->
+            <nav>
+                <header>Big Weather</header>
+                <section>
+                    <header>Tableau de Bord</header>
+                    <ul>
+                        <li class="active" id="mesures" data-value="" onclick="pageMesures()">Mesures</li>
+                        <li class="" id="carte" data-value="" onclick="pageMap()">Cartographie</li>
+                        <li class="" id="api" data-value="" onclick="pageApi()">Documentation API</li>
+                    </ul>
+                </section>
+                <section>
+                    <header>Historique</header>
+                    <ul>
+                        <li>Semaines</li>
+                        <li data-value="4">Mois</li>
+                        <li>Années</li>
+                    </ul>
+                </section>
+                <section>
+                    <header>Vos stations</header>
+                    <ul>
+                        <li class="green"><p id="json"></p></li>
+                        <li class="new"> <i class="fa fa-plus-circle"> </i> Ajouter une station</li>
+                    </ul>
+                </section>
+            </nav>
+            <!--------------------------------------------------[FIN SIDEBAR]---------------------------------------------------->
+
+
+            <article>
+                <!---------------------------------------------[BAR INFORMATIVE]-------------------------------------------------->
+                <header style="z-index: 999;">
+                    <div class="title">Tableau de Bord</div>
+                    <div id="user"></div>
+                    <div class="interval">
+                        <ul>
+                            <li id="time"></li>
+                            <li class="active" id="date">{{ date }}</li>
+                        </ul>
+                    </div>
+                </header>
+                <!------------------------------------------[FIN BAR INFORMATIVE]-------------------------------------------------->
+
+
+
+
+                <!---------------------------------------------[PAGES INNERHTML]---------------------------------------------------->
+                    <section id="pageMesures-chart">
+                        <header class="title">Prévision de la semaine</header>
+                        <div class="interval"></div>
+                        <div class="chart">
+                            <canvas id="c1" width="900" height="150"></canvas>
+                        </div>
+                    </section>
+                    <div w3-include-html="/static/dashboard/mesure.html" id="pageMesures"></div>
+                    <section id="pageMap">
+                        <div id='map' style='width: 1200px; height: 800px; border-radius: 20px;'></div>
+                    </section>
+
+                    <section id="pageApi-chart">
+                        <header class="title">Documentation & API</header>
+                        <div class="interval"></div>
+                        <div class="chart">
+                            <canvas id="c1" width="900" height="150"></canvas>
+                        </div>
+                    </section>
+                    <div w3-include-html="{{ url_for('static',filename='dashboard/mesure.html') }}" id="pageApi"></div>
+
+                <!-------------------------------------------[FIN PAGES INNERHTML]--------------------------------------------------->
+            </article>
+
+        
+
+
+            <!------------------------------------------------[JS INCLUS DU HTML]-------------------------------------------------->
+            <script>
+
+                //GEOLOCALISATION
+                var x = document.getElementById("coordinate");
+                var y = document.getElementById("json");
+
+                function getLocation() {
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(showPosition);
+                    } else {
+                        x.innerHTML = "Geolocation is not supported by this browser.";
+                    }
+                    }
+
+                    function showPosition(position) {
+
+                    //Create query for the API.
+                    var latitude = "latitude=" + position.coords.latitude;
+                    var longitude = "&longitude=" + position.coords.longitude;
+                    var query = latitude + longitude + "&localityLanguage=en";
+
+                    const Http = new XMLHttpRequest();
+
+                    var bigdatacloud_api =
+                        "https://api.bigdatacloud.net/data/reverse-geocode-client?";
+
+                    bigdatacloud_api += query;
+
+                    Http.open("GET", bigdatacloud_api);
+                    Http.send();
+
+                    Http.onreadystatechange = function() {
+                        if (this.readyState == 4 && this.status == 200) {
+                        var myObj = JSON.parse(this.responseText);
+                        console.log(myObj);
+                        y.innerHTML +=
+                            myObj.locality;
+                        }
+                    };
+                }
+                getLocation();
+
+                //--------------------------------------------[MAPBOX]--------------------------------------------------------------
+                
+                    
+                
+
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    let lat = position.coords.latitude;
+                    let long = position.coords.longitude;
+
+                    console.log(lat + " " + long);
+                
+                
+                
+                
+                
+                mapboxgl.accessToken = 'pk.eyJ1IjoiemFyZW4iLCJhIjoiY2s0OG84ZzFwMTQwcDNsbGZuZzcwN3BuMyJ9.MOGZumRxsmhYG8MiDOZy-g';
+                var map = new mapboxgl.Map({
+                    container: 'map',
+                    style: 'mapbox://styles/mapbox/light-v10',
+                    center: [0, 20],
+                    zoom: 2
+                });
+                
+                var size = 100;
+                
+                // implementation of CustomLayerInterface to draw a pulsing dot icon on the map
+                // see https://docs.mapbox.com/mapbox-gl-js/api/#customlayerinterface for more info
+                var pulsingDot = {
+                width: size,
+                height: size,
+                data: new Uint8Array(size * size * 4),
+                
+                // get rendering context for the map canvas when layer is added to the map
+                onAdd: function() {
+                var canvas = document.createElement('canvas');
+                canvas.width = this.width;
+                canvas.height = this.height;
+                this.context = canvas.getContext('2d');
+                },
+                
+                // called once before every frame where the icon will be used
+                render: function() {
+                var duration = 1000;
+                var t = (performance.now() % duration) / duration;
+                
+                var radius = (size / 2) * 0.3;
+                var outerRadius = (size / 2) * 0.7 * t + radius;
+                var context = this.context;
+                
+                // draw outer circle
+                context.clearRect(0, 0, this.width, this.height);
+                context.beginPath();
+                context.arc(
+                this.width / 2,
+                this.height / 2,
+                outerRadius,
+                0,
+                Math.PI * 2
+                );
+                context.fillStyle = 'rgba(255, 200, 200,' + (1 - t) + ')';
+                context.fill();
+                
+                // draw inner circle
+                context.beginPath();
+                context.arc(
+                this.width / 2,
+                this.height / 2,
+                radius,
+                0,
+                Math.PI * 2
+                );
+                context.fillStyle = 'rgba(255, 100, 100, 1)';
+                context.strokeStyle = 'white';
+                context.lineWidth = 2 + 4 * (1 - t);
+                context.fill();
+                context.stroke();
+                
+                // update this image's data with data from the canvas
+                this.data = context.getImageData(
+                0,
+                0,
+                this.width,
+                this.height
+                ).data;
+                
+                // continuously repaint the map, resulting in the smooth animation of the dot
+                map.triggerRepaint();
+                
+                // return `true` to let the map know that the image was updated
+                return true;
+                }
+                };
+                
+                map.on('load', function() {
+
+                map.addImage('pulsing-dot', pulsingDot, { pixelRatio: 2 });
+                map.addLayer({
+                    'id': 'points',
+                    'type': 'symbol',
+                    'source': {
+                        'type': 'geojson',
+                        'data': {
+                            'type': 'FeatureCollection',
+                            'features': [{
+                                'type': 'Feature',
+                                'properties': {
+                                    'description':
+                                    '<h1>Big Weather</h1><br><h4><center>Station de <strong>Paul</strong></center></h4>'
+                                     },
+                                'geometry': {
+                                    'type': 'Point',
+                                    'coordinates': [43, 1.3]
+                }}]}},
+                    'layout': {
+                        'icon-image': 'pulsing-dot'
+                },
+                'id': 'points',
+                    'type': 'symbol',
+                    'source': {
+                        'type': 'geojson',
+                        'data': {
+                            'type': 'FeatureCollection',
+                            'features': [{
+                                'type': 'Feature',
+                                'properties': {
+                                    'description':
+                                    '<h1>Big Weather</h1><br><h4><center>Station de <strong>Denis</strong></center></h4>',
+                                    'icon': 'theatre'
+                                     },
+                                'geometry': {
+                                    'type': 'Point',
+                                    'coordinates': [long, lat]
+                    }}]}},
+                        'layout': {
+                            'icon-image': 'pulsing-dot'
+                }
+            
+            });
+
+
+
+
+
+                // Event lors d'un clique sur un points
+                map.on('click', 'points', function(e) {
+                    map.flyTo({ center: e.features[0].geometry.coordinates });
+                });
+
+                // When a click event occurs on a feature in the places layer, open a popup at the
+                // location of the feature, with description HTML from its properties.
+                map.on('click', 'points', function(e) {
+                var coordinates = e.features[0].geometry.coordinates.slice();
+                var description = e.features[0].properties.description;
+                
+                // Ensure that if the map is zoomed out such that multiple
+                // copies of the feature are visible, the popup appears
+                // over the copy being pointed to.
+                while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+                }
+                
+                new mapboxgl.Popup()
+                .setLngLat(coordinates)
+                .setHTML(description)
+                .addTo(map);
+                });
+                
+
+
+                 });
+                });
+            </script>
+
+             <!----------------------------------------------[INCLUDE HTML]----------------------------------------------->
+            <script>
+                includeHTML();
+            </script>
+            <!----------------------------------------------[FIN DU JS HTML & INCLUDE]------------------------------------->
+
+
+
+
+
+            <!-------------------------------------------------[JS de FLASK]----------------------------------------------->
+            <script>
+                $(document).ready(function() {
+
+                    //Connexion à flask
+                    var socket = io.connect('http://127.0.0.1:8080');
+
+                    socket.on('connect', function(){
+                    socket.emit('[WEBUI] > Utilisateur Connecté');
+                    });
+
+                    //------------------------[TEMPERATURE PREVISION SEMAINE]---------------------------------------
+                    var prev_receveid = [];
+                    var date_receveid = [];
+                    var data_prevision_total = [];
+                    var data_prevision_dates = [];
+                    //---------------------------[requêtes FLASK]---------------------------------------------------
+                    socket.on('newprevsemaine1', function(msg) {
+                            console.log("[WEBUI] > Température prévue jour 1 : " + msg.prevsemaine1);
+                            prev_receveid.push(msg.prevsemaine1);
+                            data_prevision_total[0] = msg.prevsemaine1;
+                        });
+                        socket.on('newprevsemaine2', function(msg) {
+                            console.log("[WEBUI] > Température prévue jour 2 : " + msg.prevsemaine2);
+                            prev_receveid.push(msg.prevsemaine2);
+                            data_prevision_total[1] = msg.prevsemaine2;
+                        });
+                        socket.on('newprevsemaine3', function(msg) {
+                            console.log("[WEBUI] > Température prévue jour 3 : " + msg.prevsemaine3);
+                            prev_receveid.push(msg.prevsemaine3);
+                            data_prevision_total[2] = msg.prevsemaine3;
+                        });
+                        socket.on('newprevsemaine4', function(msg) {
+                            console.log("[WEBUI] > Température prévue jour 4 : " + msg.prevsemaine4);
+                            prev_receveid.push(msg.prevsemaine4);
+                            data_prevision_total[3] = msg.prevsemaine4;
+                        });
+                        socket.on('newprevsemaine5', function(msg) {
+                            console.log("[WEBUI] > Température prévue jour 5 : " + msg.prevsemaine5);
+                            prev_receveid.push(msg.prevsemaine5);
+                            data_prevision_total[4] = msg.prevsemaine5;
+                        });
+                        socket.on('newprevdate1', function(msg) {
+                            console.log("[WEBUI] > Date prévue jour 1 : " + msg.prevdate1);
+                            date_receveid.push(msg.prevdate1);
+                            data_prevision_dates[0] = msg.prevdate1;
+                        });
+                        socket.on('newprevdate2', function(msg) {
+                            console.log("[WEBUI] > Date prévue jour 2 : " + msg.prevdate2);
+                            date_receveid.push(msg.prevdate2);
+                            data_prevision_dates[1] = msg.prevdate2;
+                        });
+                        socket.on('newprevdate3', function(msg) {
+                            console.log("[WEBUI] > Date prévue jour 3 : " + msg.prevdate3);
+                            date_receveid.push(msg.prevdate3);
+                            data_prevision_dates[2] = msg.prevdate3;
+                        });
+                        socket.on('newprevdate4', function(msg) {
+                            console.log("[WEBUI] > Date prévue jour 4 : " + msg.prevdate4);
+                            date_receveid.push(msg.prevdate4);
+                            data_prevision_dates[3] = msg.prevdate4;
+                        });
+                        socket.on('newprevdate5', function(msg) {
+                            console.log("[WEBUI] > Date prévue jour 5 : " + msg.prevdate5);
+                            date_receveid.push(msg.prevdate5);
+                            data_prevision_dates[4] = msg.prevdate5;
+                        });
+                    //---------------------------------------------------------------------------------------------
+
+                    //---------------------------------[CHART JS]--------------------------------------------------
+                    var ctx = document.getElementById('c1');
+                    var myChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: data_prevision_dates,
+                            datasets: [{
+                                label: 'Température [°C]',
+                                data: data_prevision_total,
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.2)',
+                                    'rgba(54, 162, 235, 0.2)',
+                                    'rgba(255, 206, 86, 0.2)',
+                                    'rgba(75, 192, 192, 0.2)',
+                                    'rgba(153, 102, 255, 0.2)'
+                                ],
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(75, 192, 192, 1)',
+                                    'rgba(153, 102, 255, 1)'
+                                ],
+                                borderWidth: 1
+                            }],
+                            datasets: [{
+                                label: 'Température [°C]',
+                                data: data_prevision_total,
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.2)',
+                                    'rgba(54, 162, 235, 0.2)',
+                                    'rgba(255, 206, 86, 0.2)',
+                                    'rgba(75, 192, 192, 0.2)',
+                                    'rgba(153, 102, 255, 0.2)'
+                                ],
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(75, 192, 192, 1)',
+                                    'rgba(153, 102, 255, 1)'
+                                ],
+                                borderWidth: 1,
+                                type: 'line'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            animation: {
+                                duration: 3000,
+                                easing: 'easeInQuad'
+                            },
+                            legend: {
+                                labels: {
+                                    fontColor: 'white'
+                                }},
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true
+                            }}]}}});
+                });
+             </script>
+
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    </body>
+</html>

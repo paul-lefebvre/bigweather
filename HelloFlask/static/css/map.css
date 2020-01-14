@@ -1,0 +1,57 @@
+
+/*------[CSS MAPBOX]--------*/
+
+#map {
+  bottom: 0;
+  left: 0;
+  position: relative;
+  right: 0;
+  top: 0;
+  width: 100%;
+}
+.map-legend {
+  background: rgba(11, 130, 135, 0.1);
+  box-sizing: border-box;
+  font-family: 'Roboto Slab', serif;
+  height: 100%;
+  overflow: scroll;
+  padding: 2.5% 0;
+  position: absolute;
+  top: 0;
+  width: 35%;
+  z-index: 6;
+}
+.map-legend section {
+  border-bottom: 1px dashed #13caba;
+  color: #fff;
+  cursor: pointer;
+  display: block;
+  font-size: 0.9125rem;
+  position: relative;
+  padding: 1rem 5% 1rem 15%;
+  text-rendering: geometricPrecision;
+  transition: 0.3s background ease;
+  width: 80%;
+}
+.map-legend section:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transition: 0.3s background ease;
+}
+.marker-title {
+  color: #0b8287;
+  cursor: pointer;
+  font-family: 'Roboto Slab', serif;
+  font-size: 0.9125rem;
+}
+.marker-description {
+  color: #3f3f11;
+  font-family: 'Roboto Slab', serif;
+  font-size: 0.8125rem;
+}
+.leaflet-left {
+  right: 0;
+}
+.leaflet-control {
+  float: right;
+  margin-right: 10px;
+}
