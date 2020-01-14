@@ -17,9 +17,13 @@ $( document ).ready(function() {
   var pageMesureChartDisplay = document.getElementById("pageMesures-chart");
   //Cartographie
   var pageMapDisplay = document.getElementById("pageMap");
+  // API
+  var pageApiDisplay = document.getElementById("pageApi");
+  //AFFICHAGE
   pageMesureDisplay.style.display = "block";
   pageMesureChartDisplay.style.display = "block";
   pageMapDisplay.style.display = "none";
+  pageApiDisplay.style.display = "none";
 });
 //-----------------------------------------------------------------------------------------------------
 
@@ -94,8 +98,8 @@ function pageApi() {
     //scrollbar
     document.body.style.overflow = 'hidden';
     //mesures
-    var pageMesureDisplay = document.getElementById("pageApi");
-    var pageMesureChartDisplay = document.getElementById("pageApi-chart");
+    var pageMesureDisplay = document.getElementById("pageMesures");
+    var pageMesureChartDisplay = document.getElementById("pageMesures-chart");
     //Cartographie
     var pageMapDisplay = document.getElementById("pageMap");
     // API

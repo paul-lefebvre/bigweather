@@ -132,7 +132,6 @@
 	 float: right;
 	 width: 48px;
 	 height: 48px;
-	 background-image: url(https://assets.weatherstack.com/images/wsymbols01_png_64/wsymbol_0001_sunny.png);
 	 border-radius: 48px;
 	 margin-left: 20px;
 }
@@ -243,6 +242,11 @@
   #capteur{
 	display: block;
   }
+
+  #pageApi{
+	  display: block;
+  }
+
   /*------[FIN CSS AFFICHAGE PAGES]--------*/
 
 

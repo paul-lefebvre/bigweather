@@ -20,6 +20,7 @@
             <script src="{{ url_for('static',filename='dist/chart.js') }}"></script>
             <script src='https://api.mapbox.com/mapbox-gl-js/v1.4.1/mapbox-gl.js'></script>
             <link href='https://api.mapbox.com/mapbox-gl-js/v1.4.1/mapbox-gl.css' rel='stylesheet' />
+            <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
             <!---------------------------------------------------[SCRIPT JS]-------------------------------------------------------->
             <script type="text/javascript" src="{{ url_for('static',filename='js/script.js') }}"></script>
             <script type="text/javascript" src="{{ url_for('static',filename='js/dashboard.js') }}"></script>
@@ -67,7 +68,7 @@
                 <!---------------------------------------------[BAR INFORMATIVE]-------------------------------------------------->
                 <header style="z-index: 999;">
                     <div class="title">Tableau de Bord</div>
-                    <div id="user"></div>
+                    <div id="user"><img src="{{ url_for('static',filename='login/images/icons/icon-12.svg') }}" alt="" width=37></div>
                     <div class="interval">
                         <ul>
                             <li id="time"></li>
@@ -88,21 +89,90 @@
                             <canvas id="c1" width="900" height="150"></canvas>
                         </div>
                     </section>
-                    <div w3-include-html="/static/dashboard/mesure.html" id="pageMesures"></div>
+
+                    <div id="pageMesures">
+                        <!------[PAGE MESURES]------->
+                        <section>
+                            <header>Mesures</header>
+                            <div class="inlineChart"><canvas id="c2" width="100" height="100"></canvas>
+                                <div class="info">
+                                    <div class="value"><p id="tempLive"><div class="spinner-border text-primary" id="tempLoader" role="status">
+                                        <span class="sr-only">Loading...</span>
+                                    </div></p></div>
+                                    <div class="title">Température actuelle</div>
+                                </div>
+                            </div>
+                            <div class="inlineChart"><canvas id="c3" width="100" height="100"></canvas>
+                                <div class="info">
+                                    <div class="value"><p id="humidLive"><div class="spinner-border text-primary" id="humidLoader" role="status">
+                                        <span class="sr-only">Loading...</span>
+                                      </div></p></div>
+                                    <div class="title">Taux d'humidité</div>
+                                </div>
+                            </div>
+                            <div class="inlineChart"><canvas id="c4" width="100" height="100"></canvas>
+                                <div class="info">
+                                    <div class="value"><p id="pressLive"><div class="spinner-border text-primary" id="pressLoader" role="status">
+                                        <span class="sr-only">Loading...</span>
+                                    </div>
+                                    </p></div>
+                                    <div class="title">Pression</div>
+                                </div>
+                            </div>
+                        </section>
+                        <section>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Temps</th>
+                                        <th>Relevé de température</th>
+                                        <th>Relevé de taux d'humidité</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>{{ timeFirst }}</td>
+                                        <td>{{ tempFirst }}°C</td>
+                                        <td>{{ humidFirst }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>{{ timeSecond }}</td>
+                                        <td>{{ tempSecond }}°C</td>
+                                        <td>{{ humidSecond }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>{{ timeThird }}</td>
+                                        <td>{{ tempThird }}°C</td>
+                                        <td>{{ humidThird }}%</td>
+                                    </tr>
+                                    <tr>
+                                        <td>{{ timeFourth }}</td>
+                                        <td>{{ tempFourth }}°C</td>
+                                        <td>{{ humidFourth }}%</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </section>
+                    </div>
+                <!-----[FIN PAGE MESURES HTML]------>
+
+
+
+
+                    <!--Page Carthographie-->
                     <section id="pageMap">
                         <div id='map' style='width: 1200px; height: 800px; border-radius: 20px;'></div>
                     </section>
 
-                    <section id="pageApi-chart">
+
+                    <section id="pageApi">
                         <header class="title">Documentation & API</header>
                         <div class="interval"></div>
                         <div class="chart">
-                            <canvas id="c1" width="900" height="150"></canvas>
+                            <canvas id="c1" width="900" height="150"><p>Documentation sur l'api de BigWeather</p></canvas>
                         </div>
                     </section>
-                    <div w3-include-html="{{ url_for('static',filename='dashboard/mesure.html') }}" id="pageApi"></div>
-
-                <!-------------------------------------------[FIN PAGES INNERHTML]--------------------------------------------------->
+            <!-------------------------------------------[FIN PAGES INNERHTML]--------------------------------------------------->
             </article>
 
         

@@ -7,6 +7,22 @@ $(document).ready(function() {
 
   });
 
+  //fonction de suppression des loaders (spinners b4)
+  function removeTempSpinner() {
+    var elem = document.getElementById('tempLoader');
+    elem.style.display = "none";
+
+  }
+  function removeHumidSpinner() {
+    var elemd = document.getElementById('humidLoader');
+    elemd.style.display = "none";
+
+  }
+  function removePressSpinner() {
+    var elemp = document.getElementById('pressLoader');
+    elemp.style.display = "none";
+
+  }
 
   //-----------------[TIME]------------------------
   var numbers_received = [];
@@ -43,6 +59,7 @@ $(document).ready(function() {
         tempLive_string = temp_received[i].toString();
       }
       tempLive_string += '°C';
+      removeTempSpinner();
       $('#tempLive').html(tempLive_string);
 
     });
@@ -62,6 +79,7 @@ $(document).ready(function() {
         humidLive_string = humid_received[i].toString();
       }
       humidLive_string += '%';
+      removeHumidSpinner();
       $('#humidLive').html(humidLive_string);
 
     });
@@ -81,8 +99,8 @@ $(document).ready(function() {
         pressLive_string = press_received[i].toString();
       }
       pressLive_string += ' hPa';
+      removePressSpinner();
       $('#pressLive').html(pressLive_string);
-
     });
 
 

@@ -211,15 +211,24 @@ def logged():
 
 
     #-------------[TEMPERATURES SQL]-----------------
-    tempUn = str(results[0]['DONTEMPERATURE'])
-    socketio.emit('tempSqlUn', {'temp': tempUn}, namespace='/')
-    #tempSecond = str(results[1]['DONTEMPERATURE'])
-    #tempThird = str(results[2]['DONTEMPERATURE'])
-
+    tempFirst = str(results[0]['DONTEMPERATURE'])
+    tempSecond = str(results[1]['DONTEMPERATURE'])
+    tempThird = str(results[2]['DONTEMPERATURE'])
+    tempFourth = str(results[3]['DONTEMPERATURE'])
+    #-------------[Humidite SQL]-----------------
+    humidFirst = str(results[0]['DONHUMIDITE'])
+    humidSecond = str(results[1]['DONHUMIDITE'])
+    humidThird = str(results[2]['DONHUMIDITE'])
+    humidFourth = str(results[3]['DONHUMIDITE'])
+    #-------------[Heure SQL]-----------------
+    timeFirst = str(results[0]['DONHEURE'])
+    timeSecond = str(results[1]['DONHEURE'])
+    timeThird = str(results[2]['DONHEURE'])
+    timeFourth = str(results[3]['DONHEURE'])
 
     return render_template(
         "index.html",
-        date = formatted_date)
+        date = formatted_date, **locals())
 
 #----------------------------[POST DES DONNEES]------------------------------------------------
 @app.route('/api/mesure/add/1/<temp>+<humidity>', methods=['POST'])
