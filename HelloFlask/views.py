@@ -1,24 +1,23 @@
 #IMPORTS
 import os
 import json
-import hashlib
 import requests
 import http.client
 import time
 import threading
+import hashlib, binascii
 from flask_mysqldb import MySQL
 from flask_restplus import Resource, Api
 from random import randint
 from datetime import datetime, timedelta
 import locale
 locale.setlocale(locale.LC_TIME,'')
-from flask import render_template, request, jsonify, redirect
-from HelloFlask import app, socketio
+from flask import render_template, request, jsonify, redirect, session, abort, Response
+from HelloFlask import app, socketio, login_manager, User
 from flask_socketio import SocketIO, emit, send
 import logging
-from flask_login import (LoginManager, login_required, login_user, 
-                         current_user, logout_user, UserMixin)
-from itsdangerous import URLSafeTimedSerializer
+from flask_login import LoginManager, UserMixin, \
+                                login_required, login_user, logout_user, current_user 
 
 
 logging.basicConfig(level=logging.INFO)
@@ -27,10 +26,27 @@ logger = logging.getLogger(__name__)
 #THREADS
 thread = threading.Thread()
 thread_stop_event = threading.Event()
-#CRYPT
-m=hashlib.md5()
-#-------------------------------------------------
 
+#----------------------[HACHAGE PASSWORD---------------------------
+
+def hash_password(password):
+    """Hash a password for storing."""
+    salt = hashlib.sha256(os.urandom(60)).hexdigest().encode('ascii')
+    pwdhash = hashlib.pbkdf2_hmac('sha512', password.encode('utf-8'), 
+                                salt, 100000)
+    pwdhash = binascii.hexlify(pwdhash)
+    return (salt + pwdhash).decode('ascii')
+ 
+def verify_password(stored_password, provided_password):
+    """Verify a stored password against one provided by user"""
+    salt = stored_password[:64]
+    stored_password = stored_password[64:]
+    pwdhash = hashlib.pbkdf2_hmac('sha512', 
+                                  provided_password.encode('utf-8'), 
+                                  salt.encode('ascii'), 
+                                  100000)
+    pwdhash = binascii.hexlify(pwdhash).decode('ascii')
+    return pwdhash == stored_password
 
 #--------------[BDD : CONNEXION]--------------
 app.config['MYSQL_USER'] = 'root'
@@ -38,115 +54,13 @@ app.config['MYSQL_PASSWORD'] = ''
 app.config['MYSQL_HOST'] =  '127.0.0.1'
 app.config['MYSQL_DB'] = 'bigweather'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
-app.secret_key = "a_random_secret_key_$%#!@"
 
 mysql = MySQL(app)
 #-------------------------------------------------
 
 
-#----------------[LOGIN USER MANAGER]-------------
-login_serializer = URLSafeTimedSerializer(app.secret_key)
-login_manager = LoginManager()
 
-password_salt = os.urandom(32).hex()
-password = 'admin'
-hash = hashlib.sha512()
-hash.update(('%s%s' % (password_salt, password)).encode('utf-8'))
-password_hash = hash.hexdigest()
 
-#Create a quick list of users (username, password).  The password is stored
-#as a md5 hash that has also been salted.  You should never store the users
-#password and only store the password after it has been hashed. 
-USERS = (("user1", password_hash),
-        ("user2", password_hash)
-        )
-
-    #Change the duration of how long the Remember Cookie is valid on the users
-    #computer.  This can not really be trusted as a user can edit it. 
-app.config["REMEMBER_COOKIE_DURATION"] = timedelta(days=14)
-
-    #Tell the login manager where to redirect users to display the login page
-login_manager.login_view = "/"
-    #Setup the login manager. 
-login_manager.setup_app(app)
-
-class User(UserMixin):
-    """
-    User Class for flask-Login
-    """
-    def __init__(self, userid, password):
-        self.id = userid
-        self.password = password
-
-    def get_auth_token(self):
-        """
-        Encode a secure token for cookie
-        """
-        data = [str(self.id), self.password]
-        return login_serializer.dumps(data)
-
-    @staticmethod
-    def get(userid):
-        """
-        Static method to search the database and see if userid exists.  If it 
-        does exist then return a User Object.  If not then return None as 
-        required by Flask-Login. 
-        """
-        #For this example the USERS database is a list consisting of 
-        #(user,hased_password) of users.
-        for user in USERS:
-            if user[0] == userid:
-                return User(user[0], user[1])
-        return None
-
-def hash_pass(password):
-    """
-    Return the md5 hash of the password+salt
-    """
-    salted_password = password + app.secret_key
-    return m.update(salted_password).hexdigest()
-
-@login_manager.user_loader
-def load_user(userid):
-    """
-    Flask-Login user_loader callback.
-    The user_loader function asks this function to get a User Object or return 
-    None based on the userid.
-    The userid was stored in the session environment by Flask-Login.  
-    user_loader stores the returned User object in current_user during every 
-    flask request. 
-    """
-    return User.get(userid)
-
-@login_manager.request_loader
-def load_token(token):
-    """
-    Flask-Login token_loader callback. 
-    The token_loader function asks this function to take the token that was 
-    stored on the users computer process it to check if its valid and then 
-    return a User Object if its valid or None if its not valid.
-    """
-
-    #The Token itself was generated by User.get_auth_token.  So it is up to 
-    #us to known the format of the token data itself.  
-
-    #The Token was encrypted using itsdangerous.URLSafeTimedSerializer which 
-    #allows us to have a max_age on the token itself.  When the cookie is stored
-    #on the users computer it also has a exipry date, but could be changed by
-    #the user, so this feature allows us to enforce the exipry date of the token
-    #server side and not rely on the users cookie to exipre. 
-    max_age = app.config["REMEMBER_COOKIE_DURATION"].total_seconds()
-
-    #Decrypt the Security Token, data = [username, hashpass]
-    data = login_serializer.loads(token, max_age=max_age)
-
-    #Find the User
-    user = User.get(data[0])
-
-    #Check Password and return user or None
-    if user and data[1] == user.password:
-        return user
-    return None
 
 
 #--------------------------------------------------[API : OPEN WEATHER MAP]--------------------------------------------------------
@@ -304,28 +218,56 @@ class TimeThread(threading.Thread):
 
 #----------------------------[LANCEMENT DE LA PAGE HTML]------------------------------------------------
 
+#TEST CREATIONS D'UTILISATEURS en local (A CHANGER EN DB)
+users = [User(id) for id in range(1, 21)]
+# user1 | admin <-- compte de test
+users[0].password = hash_password('admin')
+
+
+#LOGIN 
 @app.route('/', methods=["GET", "POST"])
-def login_page():
+def loginpage():
 
-    if request.method == "POST":
-        user = User.get(request.form['username'])
 
-        #If we found a user based on username then compare that the submitted
-        #password matches the password in the database.  The password is stored
-        #is a slated hash format, so you must hash the password before comparing
-        #it.
-        if user and hash_pass(request.form['password']) == user.password:
-            login_user(user, remember=True)
-            return redirect(request.args.get("next") or "/")  
-    if request.method == "GET": 
+    if current_user.is_authenticated:
+        return redirect("/dashboard/station/" + current_user.name, code=302)
+
+    inputUsernameForm = '''<input name="username" id="email" autocomplete="off" size="40"/>'''
+    inputPasswordForm = ''' <input type="password" name="password" id="password"/> '''
+    usernameIncorrect = ''' '''
+    passwordIncorrect = ''' '''
+
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']      
+        if username == users[0].name:
+            if verify_password(users[0].password, password):
+                id = username.split('user')[1]
+                user = User(id)
+                login_user(user)
+                return redirect("/dashboard/station/" + user.name, code=302)
+            else:
+                passwordIncorrect = ''' ✖ '''
+                return render_template(
+                    "login.php", inputUsernameForm=inputUsernameForm, inputPasswordForm=inputPasswordForm, usernameIncorrect=usernameIncorrect, passwordIncorrect=passwordIncorrect)
+
+        else:
+            usernameIncorrect = ''' ✖ '''
+            return render_template(
+                "login.php", inputUsernameForm=inputUsernameForm, inputPasswordForm=inputPasswordForm, usernameIncorrect=usernameIncorrect, passwordIncorrect=passwordIncorrect)
+
+    else:
         return render_template(
-            "login.php")
+            "login.php", inputUsernameForm=inputUsernameForm, inputPasswordForm=inputPasswordForm, usernameIncorrect=usernameIncorrect, passwordIncorrect=passwordIncorrect)
 
 
 
-@app.route('/dashboard/station/')
+
+
+#DASHBOARD
+@app.route('/dashboard/station/<username>')
 @login_required
-def logged():
+def logged(username):
     #DATE ET HEURE
     datenow = datetime.now()
     formatted_date = datenow.strftime("%A %d %B")
@@ -352,23 +294,24 @@ def logged():
     timeThird = str(results[2]['DONHEURE'])
     timeFourth = str(results[3]['DONHEURE'])
 
-    user_id = (current_user.get_id() or "No User Logged In")
+
     return render_template(
         "index.html",
         date = formatted_date, **locals())
 
 
 
-@app.route("/logout/")
-def logout_page():
-    """
-    Web Page to Logout User, then Redirect them to Index Page.
-    """
+# LOGOUT
+@app.route("/logout")
+@login_required
+def logout():
     logout_user()
-    return redirect("/")
+    return Response('<p>Déconnecté de votre session</p>')
 
 
-#----------------------------[POST DES DONNEES]------------------------------------------------
+
+
+#POST DES DONNEES DE LA SONDE EN DIRECT
 @app.route('/api/mesure/add/1/<temp>+<humidity>', methods=['POST'])
 def mesure(temp, humidity):
     values = {'temp': temp, 'humidity': humidity}
@@ -377,9 +320,9 @@ def mesure(temp, humidity):
     socketio.emit('newtempsensor', {'temp': temp}, namespace='/')
     socketio.emit('newhumidity', {'humidity': humidity}, namespace='/')
     return values, 201
-#-------------------------------------------------------------------------------------------------------
 
-#-----------------------------[CONNEXION ET DEMARRAGE DES THREADS]--------------------------------------
+
+#CONNEXION ET DEMARRAGE DES THREADS
 @socketio.on('connect')
 def test_connect():
     global thread
@@ -408,13 +351,13 @@ def test_disconnect():
 #---------------------------------------------------------------------------------------------------------
 
 
-
-
-
-
-
-
-
-
 #-----------------GESTION DES SESSIONS COOKIE DES USERS-------------------------
+# handle login failed
+@app.errorhandler(401)
+def page_not_found(e):
+    return Response('<p>Echec de connexion/Page Introuvable</p>')
 
+# callback to reload the user object        
+@login_manager.user_loader
+def load_user(userid):
+    return User(userid)

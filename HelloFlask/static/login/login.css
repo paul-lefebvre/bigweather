@@ -118,7 +118,7 @@
 
 
 
-#signin{width:40%; background:#262936; margin:100px 50px; box-shadow:0 0 64px rgba(0,0,0,0.5); padding:100px; position:relative; overflow:hidden;}
+#signin{background:#262936; margin:100px 50px; box-shadow:0 0 64px rgba(0,0,0,0.5); padding:100px; position:relative; overflow:hidden;}
 #signin .form-title{font:500 16px/1 'Montserrat',sans-serif; color:#EBEBEB; text-align:center; margin:35px 0;}
 
 #signin .input-field{position:relative; height:50px; margin:35px 0; transition:all 300ms;}
@@ -131,6 +131,7 @@
 #signin .check{width:100%; height:100%; background:#262936; position:absolute; top:100%; left:0; text-align:center; visibility:hidden; transition:all 1s;}
 #signin .check.in{visibility:visible; top:0;}
 #signin .check i{color:#FFF; font-size:64px; line-height:7.4;}
+#signin button.panel{min-height:60px;font:500 16px/1 'Montserrat',sans-serif;width: 50%;padding:20px;display:block;background:#323544;color:#FFF;border:none;outline:0;cursor:pointer;top: 0;position: absolute;}
 
 #signin .input-field input:focus{color:#333;}
 #signin .input-field input:focus, #signin .input-field input.not-empty{height:auto; padding:14px 20px 14px 50px;}
@@ -146,9 +147,12 @@
 #gif{width:50%;}
 #gif a img{max-width:100%; box-shadow:0 0 64px rgba(0,0,0,0.5);}
 
-
-
-
+.loginCollapse1 {
+  transition: .3s transform ease-in-out;
+}
+.loginCollapse1 .collapsed {
+  transform: rotate(90deg);
+}
 
 
 
