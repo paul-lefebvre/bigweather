@@ -46,11 +46,11 @@
                     </ul>
                 </section>
                 <section>
-                    <header>Réglages</header>
+                    <header>Historique</header>
                     <ul>
-                        <li>Profil</li>
-                        <li data-value="4">Stations</li>
-                        <li>Deconnexion</li>
+                        <li>Semaines</li>
+                        <li data-value="4">Mois</li>
+                        <li>Années</li>
                     </ul>
                 </section>
                 <section>
@@ -83,9 +83,11 @@
 
                 <!---------------------------------------------[PAGES INNERHTML]---------------------------------------------------->
                     <section id="pageMesures-chart">
-                        <header class="title">Historique des 14 derniers jours</header>
+                        <header class="title">Prévision de la semaine</header>
                         <div class="interval"></div>
-                        <div id="chart_div" style="width: 1200px; height: 350px;"></div>
+                        <div class="chart">
+                            <canvas id="c1" width="900" height="150"></canvas>
+                        </div>
                     </section>
 
                     <div id="pageMesures">
@@ -166,7 +168,9 @@
                     <section id="pageApi">
                         <header class="title">Documentation & API</header>
                         <div class="interval"></div>
-                            <p>Documentation sur l'api de BigWeather</p>
+                        <div class="chart">
+                            <canvas id="c1" width="900" height="150"><p>Documentation sur l'api de BigWeather</p></canvas>
+                        </div>
                     </section>
             <!-------------------------------------------[FIN PAGES INNERHTML]--------------------------------------------------->
             </article>
@@ -343,7 +347,7 @@
                                 'type': 'Feature',
                                 'properties': {
                                     'description':
-                                    '<center><img src="{{ url_for("static",filename="login/images/icons/icon-12.svg") }}" width=30px></img></center><br><h6><center>Station de <strong>Denis</strong></center></h6>',
+                                    '<h1>Big Weather</h1><br><h4><center>Station de <strong>Denis</strong></center></h4>',
                                     'icon': 'theatre'
                                      },
                                 'geometry': {
@@ -389,6 +393,14 @@
                  });
                 });
             </script>
+
+             <!----------------------------------------------[INCLUDE HTML]----------------------------------------------->
+            <script>
+                includeHTML();
+            </script>
+            <!----------------------------------------------[FIN DU JS HTML & INCLUDE]------------------------------------->
+
+
 
 
 
@@ -459,8 +471,72 @@
                             date_receveid.push(msg.prevdate5);
                             data_prevision_dates[4] = msg.prevdate5;
                         });
-                  });
-            </script>
+                    //---------------------------------------------------------------------------------------------
+
+                    //---------------------------------[CHART JS]--------------------------------------------------
+                    var ctx = document.getElementById('c1');
+                    var myChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: data_prevision_dates,
+                            datasets: [{
+                                label: 'Température [°C]',
+                                data: data_prevision_total,
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.2)',
+                                    'rgba(54, 162, 235, 0.2)',
+                                    'rgba(255, 206, 86, 0.2)',
+                                    'rgba(75, 192, 192, 0.2)',
+                                    'rgba(153, 102, 255, 0.2)'
+                                ],
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(75, 192, 192, 1)',
+                                    'rgba(153, 102, 255, 1)'
+                                ],
+                                borderWidth: 1
+                            }],
+                            datasets: [{
+                                label: 'Température [°C]',
+                                data: data_prevision_total,
+                                backgroundColor: [
+                                    'rgba(255, 99, 132, 0.2)',
+                                    'rgba(54, 162, 235, 0.2)',
+                                    'rgba(255, 206, 86, 0.2)',
+                                    'rgba(75, 192, 192, 0.2)',
+                                    'rgba(153, 102, 255, 0.2)'
+                                ],
+                                borderColor: [
+                                    'rgba(255, 99, 132, 1)',
+                                    'rgba(54, 162, 235, 1)',
+                                    'rgba(255, 206, 86, 1)',
+                                    'rgba(75, 192, 192, 1)',
+                                    'rgba(153, 102, 255, 1)'
+                                ],
+                                borderWidth: 1,
+                                type: 'line'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: true,
+                            animation: {
+                                duration: 3000,
+                                easing: 'easeInQuad'
+                            },
+                            legend: {
+                                labels: {
+                                    fontColor: 'white'
+                                }},
+                            scales: {
+                                yAxes: [{
+                                    ticks: {
+                                        beginAtZero: true
+                            }}]}}});
+                });
+             </script>
 
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
