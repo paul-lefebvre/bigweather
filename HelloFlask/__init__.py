@@ -1,10 +1,11 @@
 #IMPORTS
 from flask import Flask
 from flask_socketio import SocketIO
+from itsdangerous import URLSafeTimedSerializer
 
 #INITIALISATION DE FLASK
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'mysecret'
+
 socketio = SocketIO(app)
 
 #IMPORT DES VIEWS

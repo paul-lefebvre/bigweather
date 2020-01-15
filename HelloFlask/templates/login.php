@@ -131,28 +131,27 @@
           <div class="content-wrapper">
 
             <!--FORMULAIRE-->
-            <div class="">
+            <form method="POST" action="/">
             <div id="signin">
                 <div class="form-title">Tableau de bord</div>
                 <img src="{{ url_for('static',filename='login/images/icons/icon-13.svg') }}" width=130 class="rounded float-middle" alt="Logo BigWeather">
                 
                 <div class="input-field">
-                    <input type="email" id="email" autocomplete="off"/>
-                    <i><img src="{{ url_for('static',filename='login/images/icons/icon-8.svg') }}" class="material-icons" width=29></i>
-                    <label for="email">Email</label>
+                    <input name="username" id="email" autocomplete="off" size="40"/>
+                    <i><img src="{{ url_for('static',filename='login/images/icons/icon-8.svg') }}" class="material-icons" width=27></i>
+                    <label for="email">Pseudo</label>
                 </div>
                 <div class="input-field">
-                    <input type="password" id="password"/>
-                    <i><img src="{{ url_for('static',filename='login/images/icons/icon-8.svg') }}" class="material-icons" width=29></i>
+                    <input type="password" name="password" id="password"/>
+                    <i><img src="{{ url_for('static',filename='login/images/icons/icon-8.svg') }}" class="material-icons" width=27></i>
                     <label for="password">Mot de passe</label>
                 </div>
-                <button class="login">Connexion</button>
+                <button class="login" type="submit">Connexion</button>
                 <div class="check">
                     <i><img src="{{ url_for('static',filename='login/images/icons/icon-12.svg') }}" class="material-icons" width=200><h4>Authentification...</h4></i>
                 </div>
-                </div>
-
             </div>
+            </form>
             <!--FIN FORMULAIRE-->
             
           </div>
